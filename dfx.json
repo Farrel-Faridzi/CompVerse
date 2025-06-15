@@ -5,13 +5,10 @@
       "type": "motoko"
     },
     "myproject_frontend": {
-      "dependencies": [
-        "myproject_backend"
-      ],
-      "source": [
-        "src/myproject_frontend/assets"
-      ],
-      "type": "assets"
+      "dependencies": ["myproject_backend"],
+      "source": ["src/myproject_frontend/dist"],
+      "type": "assets",
+      "build": "npm run build --prefix src/myproject_frontend"
     }
   },
   "defaults": {
