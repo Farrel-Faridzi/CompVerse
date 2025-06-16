@@ -67,7 +67,7 @@ actor {
       joinedCompetitions = [];
     });
 
-    "User registered successfully."
+    return "User registered successfully."
   }
 
   // Fungsi untuk membuat kompetisi (khusus organiser)
@@ -94,42 +94,41 @@ actor {
   }
 
 // Hapus kompetisi jika caller adalah organiser-nya
-public func deleteCompetition(compId: CompetitionId): async Text {
-  let caller = Principal.fromActor(this);
-  switch (competitionMap.get(compId)) {
-    case null return "Competition not found.";
-    case (?comp) {
-      if (comp.organiser != caller) {
-        return "Unauthorized. Only the organiser can delete this competition.";
-      };
+  public func deleteCompetition(compId: CompetitionId): async Text {
+    let caller = Principal.fromActor(this);
+    switch (competitionMap.get(compId)) {
+      case null return "Competition not found.";
+      case (?comp) {
+        if (comp.organiser != caller) {
+          return "Unauthorized. Only the organiser can delete this competition.";
+        };
 
-      // Hapus ID kompetisi dari semua peserta
-      for (pid in comp.participants.vals()) {
-        switch (userMap.get(pid)) {
-          case (?user) {
-            let updatedUser = {
-              id = user.id;
-              name = user.name;
-              bio = user.bio;
-              isOrganiser = user.isOrganiser;
-              joinedCompetitions = Array.filter<Text>(
-                user.joinedCompetitions,
-                func(c) { c != compId }
-              );
+        // Hapus ID kompetisi dari semua peserta
+        for (pid in comp.participants.vals()) {
+          switch (userMap.get(pid)) {
+            case (?user) {
+              let updatedUser = {
+                id = user.id;
+                name = user.name;
+                bio = user.bio;
+                isOrganiser = user.isOrganiser;
+                joinedCompetitions = Array.filter<Text>(
+                  user.joinedCompetitions,
+                  func(c) { c != compId }
+                );
+              };
+              userMap.put(pid, updatedUser);
             };
-            userMap.put(pid, updatedUser);
-          };
-          case null {};
-        }
-      };
+            case null {};
+          }
+        };
 
-      // Hapus kompetisinya
-      competitionMap.delete(compId);
-      return "Competition deleted.";
+        // Hapus kompetisinya
+        competitionMap.delete(compId);
+        return "Competition deleted.";
+      }
     }
   }
-}
-
 
   // ===========================
   // === PARTICIPATION LOGIC ===
