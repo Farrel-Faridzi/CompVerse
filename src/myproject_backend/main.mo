@@ -1,8 +1,4 @@
 // Import library dasar dari Motoko base
-import Nat "mo:base/Nat";
-import HashMap "mo:base/HashMap";
-import Iter "mo:base/Iter";
-import Principal "mo:base/Principal";
 
 actor {
 
@@ -10,35 +6,35 @@ actor {
   // === TYPE DEFINITIONS ===
   // ========================
 
-  type UserId = Principal;              // Setiap user diwakili oleh Principal
-  type CompetitionId = Text;            // ID kompetisi bertipe teks
+  type UserId = Principal; // Setiap user diwakili oleh Principal
+  type CompetitionId = Text; // ID kompetisi bertipe teks
 
   // Struktur user
   type User = {
-    id: UserId;
-    username: Text;
-    password: Text;
-    name: Text;
-    bio: Text;
-    profilePicUrl: Text;                  // URL pfp
-    isOrganiser: Bool;                    // True jika user adalah organiser
-    joinedCompetitions: [CompetitionId];  // Kompetisi yang diikuti
-    ownedCompetitions: [CompetitionId];   // Kompetisi yang user selenggarakan
+    id : UserId;
+    username : Text;
+    password : Text;
+    name : Text;
+    bio : Text;
+    profilePicUrl : Text; // URL pfp
+    isOrganiser : Bool; // True jika user adalah organiser
+    joinedCompetitions : [CompetitionId]; // Kompetisi yang diikuti
+    ownedCompetitions : [CompetitionId]; // Kompetisi yang user selenggarakan
   };
 
   // Struktur gabungan user + kompetisi yang diikuti (untuk profile)
   type UserProfile = {
-    user: User;
-    competitions: [Competition]; // Kompetisi detail, bukan hanya ID
+    user : User;
+    competitions : [Competition]; // Kompetisi detail, bukan hanya ID
   };
 
   // Struktur kompetisi
   type Competition = {
-    id: CompetitionId;
-    name: Text;
-    description: Text;
-    organiser: UserId;
-    participants: [UserId];
+    id : CompetitionId;
+    name : Text;
+    description : Text;
+    organiser : UserId;
+    participants : [UserId];
   };
 
   // =================
@@ -54,12 +50,15 @@ actor {
   // Map kompetisi berdasarkan ID teks
   stable var competitionMap = HashMap.HashMap<CompetitionId, Competition>(0, Text.equal, Text.hash);
 
+  // Map to track which user is "logged in" (based on Principal)
+  stable var loggedInMap = HashMap.HashMap<UserId, Bool>(0, Principal.equal, Principal.hash);
+
   // ====================================
   // === AUTHENTICATION & USER LOGIC  ===
   // ====================================
 
   // Fungsi untuk register user baru
-  public func registerUser(username: Text, password: Text, name: Text, bio: Text, isOrganiser: Bool, pfp: Text): async Text {
+  public func registerUser(username : Text, hashedPassword : Text, name : Text, bio : Text, isOrganiser : Bool, pfp : Text) : async Text {
     let caller = msg.caller;
 
     if (userMap.get(caller) != null) {
@@ -70,10 +69,10 @@ actor {
       return "Username already taken.";
     };
 
-    let newUser: User = {
+    let newUser : User = {
       id = caller;
       username = username;
-      password = password;
+      password = hashedPassword;
       name = name;
       bio = bio;
       profilePicUrl = pfp;
@@ -86,51 +85,69 @@ actor {
     usernameMap.put(username, caller);
 
     return "User registered successfully.";
-  }
+  };
 
   // Fungsi login
-  public query func login(username: Text, password: Text): async Text {
+  public query func login(username : Text, hashedPassword : Text) : async Text {
     switch (usernameMap.get(username)) {
       case null return "Username not found.";
       case (?uid) {
         switch (userMap.get(uid)) {
           case null return "User data corrupted.";
           case (?user) {
-            if (user.password == password) {
+            if (user.password == hashedPassword) {
+              loggedInMap.put(uid, true);
               return "Login successful.";
             } else {
               return "Incorrect password.";
-            }
-          }
-        }
-      }
-    }
-  }
+            };
+          };
+        };
+      };
+    };
+  };
 
-  public query func getLoggedInUser(): async ?User {
+  public func logout() : async Text {
+    let caller = msg.caller;
+
+    if (loggedInMap.get(caller) == null or loggedInMap.get(caller) == ?false) {
+      return "User not logged in.";
+    };
+
+    loggedInMap.put(caller, false);
+    return "Logout successful.";
+  };
+
+  public query func getLoggedInUser() : async ?User {
     let caller = msg.caller;
     return userMap.get(caller);
-  }
+  };
 
-
-  public query func isLoggedIn(userId: UserId): async Bool {
-    return userMap.get(userId) != null;
-  }
+  public query func isLoggedIn() : async Bool {
+    let caller = msg.caller;
+    switch (loggedInMap.get(caller)) {
+      case (?true) return true;
+      case _ return false;
+    };
+  };
 
   // User update profile, kalau ada yang tidak diubah gunakan null
-  public func updateUserProfile(nameOpt: ?Text, bioOpt: ?Text, pfpOpt: ?Text): async Text {
+  public func updateUserProfile(nameOpt : ?Text, bioOpt : ?Text, pfpOpt : ?Text) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
       case null return "User not registered.";
       case (?user) {
-        let updatedUser: User = {
+        let updatedUser : User = {
           id = user.id;
           username = user.username;
           password = user.password;
           name = switch (nameOpt) { case (?n) n; case null user.name };
           bio = switch (bioOpt) { case (?b) b; case null user.bio };
-          profilePicUrl = switch (pfpOpt) { case (?p) p; case null user.profilePicUrl };
+          profilePicUrl = switch (pfpOpt) {
+            case (?p) p;
+            case null user.profilePicUrl;
+          };
           isOrganiser = user.isOrganiser;
           joinedCompetitions = user.joinedCompetitions;
           ownedCompetitions = user.ownedCompetitions;
@@ -139,53 +156,53 @@ actor {
         userMap.put(caller, updatedUser);
         return "Profile updated.";
       };
-    }
-  }
+    };
+  };
 
-// Update password user
-public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
-  let caller = msg.caller;
+  // Update password user
+  public func updatePassword(oldPassword : Text, newPassword : Text) : async Text {
+    let caller = msg.caller;
 
-  switch (userMap.get(caller)) {
-    case null return "User not registered.";
-    case (?user) {
-      if (user.password != oldPassword) {
-        return "Incorrect old password.";
+    switch (userMap.get(caller)) {
+      case null return "User not registered.";
+      case (?user) {
+        if (user.password != oldPassword) {
+          return "Incorrect old password.";
+        };
+
+        let updatedUser : User = {
+          id = user.id;
+          username = user.username;
+          password = newPassword;
+          name = user.name;
+          bio = user.bio;
+          profilePicUrl = user.profilePicUrl;
+          isOrganiser = user.isOrganiser;
+          joinedCompetitions = user.joinedCompetitions;
+          ownedCompetitions = user.ownedCompetitions;
+        };
+
+        userMap.put(caller, updatedUser);
+        return "Password updated successfully.";
       };
-
-      let updatedUser: User = {
-        id = user.id;
-        username = user.username;
-        password = newPassword;
-        name = user.name;
-        bio = user.bio;
-        profilePicUrl = user.profilePicUrl;
-        isOrganiser = user.isOrganiser;
-        joinedCompetitions = user.joinedCompetitions;
-        ownedCompetitions = user.ownedCompetitions;
-      };
-
-      userMap.put(caller, updatedUser);
-      return "Password updated successfully.";
-    }
-  }
-}
+    };
+  };
 
   // ==============================
   // === COMPETITION MANAGEMENT ===
   // ==============================
 
   // Fungsi untuk membuat kompetisi (khusus organiser)
-  public func createCompetition(id: Text, name: Text, desc: Text): async Text {
+  public func createCompetition(id : Text, name : Text, desc : Text) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
       case null return "User not registered.";
       case (?user) {
-        if (!user.isOrganiser) return "Only organisers can create competitions.";
+        if (! user.isOrganiser) return "Only organisers can create competitions.";
         if (competitionMap.get(id) != null) return "Competition ID already exists.";
 
-        let newComp: Competition = {
+        let newComp : Competition = {
           id = id;
           name = name;
           description = desc;
@@ -210,11 +227,11 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
         userMap.put(caller, updatedUser);
 
         return "Competition created.";
-      }
-    }
-  }
+      };
+    };
+  };
 
-  public func updateCompetition(compId: CompetitionId, nameOpt: ?Text, descOpt: ?Text): async Text {
+  public func updateCompetition(compId : CompetitionId, nameOpt : ?Text, descOpt : ?Text) : async Text {
     let caller = msg.caller;
 
     switch (competitionMap.get(compId)) {
@@ -224,22 +241,77 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
           return "Unauthorized. Only the organiser can update this competition.";
         };
 
-        let updatedComp: Competition = {
+        let updatedComp : Competition = {
           id = comp.id;
           name = switch (nameOpt) { case (?n) n; case null comp.name };
-          description = switch (descOpt) { case (?d) d; case null comp.description };
+          description = switch (descOpt) {
+            case (?d) d;
+            case null comp.description;
+          };
           organiser = comp.organiser;
           participants = comp.participants;
         };
 
         competitionMap.put(compId, updatedComp);
         return "Competition updated.";
-      }
-    }
-  }
+      };
+    };
+  };
+
+  // Kick participant dari competition (organiser function)
+  public func kickParticipant(compId : CompetitionId, target : UserId) : async Text {
+    let caller = msg.caller;
+
+    switch (competitionMap.get(compId)) {
+      case null return "Competition not found.";
+      case (?comp) {
+        if (comp.organiser != caller) {
+          return "Only the organiser can kick participants.";
+        };
+
+        if (! Iter.contains<UserId>(comp.participants.vals(), target, Principal.equal)) {
+          return "User is not a participant.";
+        };
+
+        // Hapus user dari participant competition
+        let updatedComp = {
+          id = comp.id;
+          name = comp.name;
+          description = comp.description;
+          organiser = comp.organiser;
+          participants = Array.filter<UserId>(comp.participants, func(p) { p != target });
+        };
+        competitionMap.put(compId, updatedComp);
+
+        // Hapus competition dari list joined competition user
+        switch (userMap.get(target)) {
+          case null {};
+          case (?user) {
+            let updatedUser = {
+              id = user.id;
+              username = user.username;
+              password = user.password;
+              name = user.name;
+              bio = user.bio;
+              profilePicUrl = user.profilePicUrl;
+              isOrganiser = user.isOrganiser;
+              joinedCompetitions = Array.filter<CompetitionId>(
+                user.joinedCompetitions,
+                func(c) { c != compId },
+              );
+              ownedCompetitions = user.ownedCompetitions;
+            };
+            userMap.put(target, updatedUser);
+          };
+        };
+
+        return "User has been removed from the competition.";
+      };
+    };
+  };
 
   // Hapus kompetisi jika caller adalah organiser-nya
-  public func deleteCompetition(compId: CompetitionId): async Text {
+  public func deleteCompetition(compId : CompetitionId) : async Text {
     let caller = msg.caller;
 
     switch (competitionMap.get(compId)) {
@@ -253,7 +325,7 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
         for (pid in comp.participants.vals()) {
           switch (userMap.get(pid)) {
             case (?user) {
-              let updatedUser: User = {
+              let updatedUser : User = {
                 id = user.id;
                 username = user.username;
                 password = user.password;
@@ -263,14 +335,14 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
                 isOrganiser = user.isOrganiser;
                 joinedCompetitions = Array.filter<CompetitionId>(
                   user.joinedCompetitions,
-                  func(c) { c != compId }
+                  func(c) { c != compId },
                 );
                 ownedCompetitions = user.ownedCompetitions;
               };
               userMap.put(pid, updatedUser);
             };
             case null {};
-          }
+          };
         };
 
         // Hapus ID kompetisi dari organiser
@@ -287,7 +359,7 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
               joinedCompetitions = organiser.joinedCompetitions;
               ownedCompetitions = Array.filter<CompetitionId>(
                 organiser.ownedCompetitions,
-                func(c) { c != compId }
+                func(c) { c != compId },
               );
             };
             userMap.put(caller, updatedOrganiser);
@@ -298,16 +370,16 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
         // Hapus kompetisinya dari map
         competitionMap.delete(compId);
         return "Competition deleted.";
-      }
-    }
-  }
+      };
+    };
+  };
 
   // ===========================
   // === PARTICIPATION LOGIC ===
   // ===========================
 
   // Fungsi user untuk join kompetisi
-  public func joinCompetition(compId: CompetitionId): async Text {
+  public func joinCompetition(compId : CompetitionId) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
@@ -345,14 +417,14 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
             competitionMap.put(compId, updatedComp);
 
             return "Joined competition.";
-          }
-        }
-      }
-    }
-  }
+          };
+        };
+      };
+    };
+  };
 
   // User keluar dari kompetisi
-  public func unjoinCompetition(compId: CompetitionId): async Text {
+  public func unjoinCompetition(compId : CompetitionId) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
@@ -361,7 +433,7 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
         switch (competitionMap.get(compId)) {
           case null return "Competition not found.";
           case (?comp) {
-            if (!Iter.contains<Principal>(comp.participants.vals(), caller, Principal.equal)) {
+            if (! Iter.contains<Principal>(comp.participants.vals(), caller, Principal.equal)) {
               return "You are not a participant of this competition.";
             };
 
@@ -374,7 +446,7 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
               isOrganiser = user.isOrganiser;
               joinedCompetitions = Array.filter<Text>(
                 user.joinedCompetitions,
-                func(c) { c != compId }
+                func(c) { c != compId },
               );
             };
             userMap.put(caller, updatedUser);
@@ -387,17 +459,17 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
               organiser = comp.organiser;
               participants = Array.filter<Principal>(
                 comp.participants,
-                func(p) { p != caller }
+                func(p) { p != caller },
               );
             };
             competitionMap.put(compId, updatedComp);
 
             return "You have unjoined the competition.";
-          }
-        }
-      }
-    }
-  }
+          };
+        };
+      };
+    };
+  };
 
   // =======================
   // === QUERY FUNCTIONS ===
@@ -417,9 +489,9 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
       case (?user) {
         let comps = Array.filterMap<CompetitionId, Competition>(
           user.joinedCompetitions,
-          func (compId) {
-            competitionMap.get(compId)
-          }
+          func(compId) {
+            competitionMap.get(compId);
+          },
         );
 
         return ?{
@@ -428,79 +500,101 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
         };
       };
     };
-  }
+  };
 
   // Ambil detail kompetisi
-  public query func getCompetitionDetail(compId: CompetitionId): async ?Competition {
+  public query func getCompetitionDetail(compId : CompetitionId) : async ?Competition {
     return competitionMap.get(compId);
-  }
+  };
 
   // Ambil daftar kompetisi yang diikuti oleh user tertentu
-  public query func getCompetitionsByUser(userId: UserId): async [Competition] {
+  public query func getCompetitionsByUser(userId : UserId) : async [Competition] {
     switch (userMap.get(userId)) {
       case (?user) {
         let comps = user.joinedCompetitions;
-        return Array.filterMap<CompetitionId, Competition>(comps, func(id) {
-          competitionMap.get(id);
-        });
+        return Array.filterMap<CompetitionId, Competition>(
+          comps,
+          func(id) {
+            competitionMap.get(id);
+          },
+        );
       };
       case null return [];
-    }
-  }
+    };
+  };
 
   // Organiser bisa melihat peserta kompetisinya
-  public query func getParticipantsOfCompetition(compId: CompetitionId): async [User] {
+  public query func getParticipantsOfCompetition(compId : CompetitionId) : async [User] {
     switch (competitionMap.get(compId)) {
       case (null) return [];
       case (?comp) {
         // Ambil semua user dari daftar principal
-        return Array.filterMap<UserId, User>(comp.participants, func (pid) {
-          userMap.get(pid);
-        });
-      }
-    }
-  }
+        return Array.filterMap<UserId, User>(
+          comp.participants,
+          func(pid) {
+            userMap.get(pid);
+          },
+        );
+      };
+    };
+  };
 
   // Cek jika user sudah join kompetisi atau belum
-  public query func hasJoined(compId: CompetitionId): async Bool {
+  public query func hasJoined(compId : CompetitionId) : async Bool {
     let caller = msg.caller;
     switch (userMap.get(caller)) {
       case (?user) {
         return Array.contains(user.joinedCompetitions, compId, func(a, b) { a == b });
       };
       case null return false;
-    }
-  }
+    };
+  };
 
   // Cek jika user sudah register atau belum
-  public query func isUserRegistered(): async Bool {
+  public query func isUserRegistered() : async Bool {
     let caller = msg.caller;
     return userMap.get(caller) != null;
-  }
+  };
 
   // Return semua kompetisi yang ada di sistem
-  public query func getAllCompetitions(): async [Competition] {
+  public query func getAllCompetitions() : async [Competition] {
     return Iter.toArray(competitionMap.vals());
-  }
+  };
 
   // Return semua kompetisi yang diselenggarakan user
-  public query func getOwnedCompetitions(userId: UserId): async [Competition] {
+  public query func getOwnedCompetitions(userId : UserId) : async [Competition] {
     switch (userMap.get(userId)) {
       case (?user) {
         return Array.filterMap<CompetitionId, Competition>(
           user.ownedCompetitions,
-          func (cid) { competitionMap.get(cid) }
+          func(cid) { competitionMap.get(cid) },
         );
       };
       case null return [];
-    }
-  }
+    };
+  };
+
+  // Search competitions by keyword (dari nama / description)
+  public query func searchCompetitions(keyword : Text) : async [Competition] {
+    let loweredKeyword = Text.toLowercase(keyword);
+
+    return Iter.toArray(
+      Iter.filter<Competition>(
+        competitionMap.vals(),
+        func(comp) {
+          let nameLower = Text.toLowercase(comp.name);
+          let descLower = Text.toLowercase(comp.description);
+          Text.contains(nameLower, loweredKeyword) or Text.contains(descLower, loweredKeyword);
+        },
+      )
+    );
+  };
 
   // =======================
   // === Admin / Testing ===
   // =======================
 
-  public func deleteUser(): async Text {
+  public func deleteUser() : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
@@ -520,7 +614,7 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
               competitionMap.put(compId, updatedComp);
             };
             case null {};
-          }
+          };
         };
 
         // Hapus kompetisi yang ia selenggarakan (opsional: bisa batasi)
@@ -535,19 +629,18 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
         userMap.delete(caller);
 
         return "User deleted.";
-      }
-    }
-  }
-
+      };
+    };
+  };
 
   // Return semua user
-  public query func getAllUsers(): async [User] {
+  public query func getAllUsers() : async [User] {
     return Iter.toArray(userMap.vals());
-  }
+  };
 
-  public query func getSystemStats(): async {
-    userCount: Nat;
-    competitionCount: Nat;
+  public query func getSystemStats() : async {
+    userCount : Nat;
+    competitionCount : Nat;
   } {
     return {
       userCount = Nat.fromIter(userMap.keys());
@@ -555,6 +648,4 @@ public func updatePassword(oldPassword: Text, newPassword: Text): async Text {
     };
   }
 
-
-
-}
+};
