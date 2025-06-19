@@ -1,0 +1,148 @@
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* KUNCI PERBAIKAN OVERFLOW: Pastikan html dan body tidak pernah lebih lebar dari viewport */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 120vw; /* <-- Gunakan 100vw (viewport width) untuk memastikan lebar penuh viewport */
+  min-height: 100vh;
+  font-family: sans-serif;
+  background-color: #fff;
+  color: black;
+  overflow-x: hidden; /* Tetap pertahankan ini sebagai penutup */
+}
+
+/* Container */
+.home-container {
+  /* Ini juga penting untuk tidak membiarkannya menyebabkan overflow */
+  width: 100%; /* Mengambil 100% dari body */
+  min-height: 100vh;
+  /* Jika ada masalah overflow di sini, Anda bisa menambahkan overflow-x: hidden; juga */
+}
+
+/* Navbar (Seharusnya sudah benar, kita hanya memastikan tidak ada padding/margin berlebih) */
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 20px 50px;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%; /* Mengambil 100% dari home-container */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Pastikan padding tidak membuat dia melebihi 100% */
+  /* box-sizing: border-box; dari reset global sudah menangani ini */
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  height: 40px;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  align-self: center;
+}
+
+.nav-links { 
+  display: flex;
+  list-style: none;
+  gap: 30px;
+  margin-left: auto;
+}
+
+.nav-links li {
+  cursor: pointer;
+  font: optional;
+  color: black;
+  font-size: 16px;
+  padding-left: 50px;
+}
+
+.navbar-right {
+  margin-left: 100px;
+}
+
+.signin-btn {
+  padding: 8px 16px;
+  background: linear-gradient(to right, #b312ff, #4a00e0);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+/* Hero Section (Revisi untuk memastikan tidak ada overflow, fokus pada lebar maksimum) */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+
+  /* KUNCI PERBAIKAN: Kontrol lebar total hero section secara ketat */
+  width: 100%; /* Hero mengambil lebar penuh dari parent-nya */
+  max-width: 1200px; /* Batasi lebar maksimum konten utama */
+  margin: 80px auto; /* Pusatkan hero secara horizontal, berikan margin atas/bawah */
+  padding: 0 20px; /* Berikan padding internal yang relatif kecil untuk menghindari pemotongan */
+
+  box-sizing: border-box; /* Pastikan ini berlaku */
+  overflow: hidden; /* Pastikan tidak ada overflow di dalam hero itu sendiri */
+}
+
+.hero-text {
+  flex: 1; /* Fleksibel mengisi ruang */
+  min-width: 300px; /* Tidak boleh lebih kecil dari ini */
+  max-width: 600px; /* Tidak boleh lebih besar dari ini */
+  /* Geser teks ke kanan menggunakan padding-left */
+  padding-left: 130px; /* Sesuaikan nilai ini */
+  padding-right: 20px; /* Beri sedikit jarak ke gambar */
+}
+
+.hero-text h1 {
+  font-size: 40px;
+  line-height: 1.2;
+  color: black;
+}
+
+.hero-text h1 span {
+  text-decoration: underline;
+  text-decoration-color: #000;
+  color: black;
+}
+
+.hero-text p {
+  margin-top: 15px;
+  font-size: 18px;
+  color: #444;
+}
+
+.hero-image {
+  flex: 1; /* Fleksibel mengisi ruang */
+  min-width: 280px; /* Tidak boleh lebih kecil dari ini */
+  max-width: 400px; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-placeholder {
+  width: 100%; /* Akan mengisi lebar kontainer flex-item-nya */
+  height: 350px;
+  background: #ddd;
+  border-radius: 20px;
+}
