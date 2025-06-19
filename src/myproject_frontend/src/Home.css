@@ -102,6 +102,7 @@ html, body {
 
   box-sizing: border-box; /* Pastikan ini berlaku */
   overflow: hidden; /* Pastikan tidak ada overflow di dalam hero itu sendiri */
+  overflow-y: auto; /* Jika ada konten yang lebih tinggi, biarkan scroll vertikal */
 }
 
 .hero-text {
