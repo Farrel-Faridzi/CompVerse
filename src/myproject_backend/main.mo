@@ -35,7 +35,34 @@ actor {
     description : Text;
     organiser : UserId;
     participants : [UserId];
+
+    // Attribute for filtering
+    category: Text;             // Hackathon, Data, UI/UX, Bussines Case, dll.
+    tags: [Text];
+    level: Text;                //  SD, SMP, SMA, MAHASISWA, dll.
+    location: Text;
+    deadline: Nat;              // Timestamp
+    isFree: Bool;
+    entryFee: Nat;
+    maxParticipants: Nat;
+    scope : CompetitionScope;   // International, National, Province, City, Other
+    status: CompetitionStatus;  // Upcoming, Ongoing, Completed, Cancelled, Draft
+    createdAt: Nat;             // Timestamp
   };
+
+  type CompetitionStatus = 
+    { #Upcoming } |
+    { #Ongoing } |
+    { #Completed } |
+    { #Cancelled } |
+    { #Draft };
+
+  type CompetitionScope =
+    { #International } |
+    { #National } |
+    { #Province} |      // or state
+    { #City } |
+    { #Other };
 
   // =================
   // === DATABASES ===
@@ -193,13 +220,27 @@ actor {
   // ==============================
 
   // Fungsi untuk membuat kompetisi (khusus organiser)
-  public func createCompetition(id : Text, name : Text, desc : Text) : async Text {
+  public func createCompetition(
+    id: Text,
+    name: Text,
+    desc: Text,
+    category: Text,
+    tags: [Text],
+    level: Text,
+    location: Text,
+    deadline: Nat,
+    isFree: Bool,
+    entryFee: Nat,
+    maxParticipants: Nat,
+    scope: CompetitionScope,
+    status: CompetitionStatus
+  ) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
       case null return "User not registered.";
       case (?user) {
-        if (! user.isOrganiser) return "Only organisers can create competitions.";
+        if (!user.isOrganiser) return "Only organisers can create competitions.";
         if (competitionMap.get(id) != null) return "Competition ID already exists.";
 
         let newComp : Competition = {
@@ -208,6 +249,17 @@ actor {
           description = desc;
           organiser = caller;
           participants = [];
+          category = category;
+          tags = tags;
+          level = level;
+          location = location;
+          deadline = deadline;
+          isFree = isFree;
+          entryFee = entryFee;
+          maxParticipants = maxParticipants;
+          scope = scope;
+          status = status;
+          createdAt = Time.now(); // Timestamp saat ini
         };
 
         competitionMap.put(id, newComp);
@@ -230,6 +282,7 @@ actor {
       };
     };
   };
+
 
   public func updateCompetition(compId : CompetitionId, nameOpt : ?Text, descOpt : ?Text) : async Text {
     let caller = msg.caller;
@@ -392,6 +445,15 @@ actor {
               return "Already joined.";
             };
 
+            if (comp.maxParticipants <= comp.participants.size()) {
+              return "Participant limit reached.";
+            };
+
+            let now = Time.now() / 1_000_000_000; // Time in seconds
+            if (now > comp.deadline) {
+              return "Registration deadline has passed.";
+            };
+
             let updatedUser = {
               id = user.id;
               username = user.username;
@@ -403,7 +465,6 @@ actor {
               joinedCompetitions = Array.append(user.joinedCompetitions, [compId]);
               ownedCompetitions = user.ownedCompetitions;
             };
-
             userMap.put(caller, updatedUser);
 
             let updatedComp = {
@@ -412,8 +473,18 @@ actor {
               description = comp.description;
               organiser = comp.organiser;
               participants = Array.append(comp.participants, [caller]);
+              category = comp.category;
+              tags = comp.tags;
+              level = comp.level;
+              location = comp.location;
+              deadline = comp.deadline;
+              isFree = comp.isFree;
+              entryFee = comp.entryFee;
+              maxParticipants = comp.maxParticipants;
+              scope = comp.scope;
+              status = comp.status;
+              createdAt = comp.createdAt;
             };
-
             competitionMap.put(compId, updatedComp);
 
             return "Joined competition.";
@@ -422,6 +493,7 @@ actor {
       };
     };
   };
+
 
   // User keluar dari kompetisi
   public func unjoinCompetition(compId : CompetitionId) : async Text {
@@ -440,15 +512,16 @@ actor {
             // Update user
             let updatedUser = {
               id = user.id;
+              username = user.username;
+              password = user.password;
               name = user.name;
               bio = user.bio;
               profilePicUrl = user.profilePicUrl;
               isOrganiser = user.isOrganiser;
-              joinedCompetitions = Array.filter<Text>(
-                user.joinedCompetitions,
-                func(c) { c != compId },
-              );
+              joinedCompetitions = Array.filter<Text>(user.joinedCompetitions, func(c) { c != compId });
+              ownedCompetitions = user.ownedCompetitions;
             };
+
             userMap.put(caller, updatedUser);
 
             // Update competition
@@ -574,21 +647,62 @@ actor {
     };
   };
 
-  // Search competitions by keyword (dari nama / description)
-  public query func searchCompetitions(keyword : Text) : async [Competition] {
-    let loweredKeyword = Text.toLowercase(keyword);
-
+  // Search competitions by keyword (dari nama / description) and filter
+  public query func searchCompetitions(
+    keyword: ?Text,
+    filter: CompetitionFilter
+  ) : async [Competition] {
     return Iter.toArray(
       Iter.filter<Competition>(
         competitionMap.vals(),
-        func(comp) {
-          let nameLower = Text.toLowercase(comp.name);
-          let descLower = Text.toLowercase(comp.description);
-          Text.contains(nameLower, loweredKeyword) or Text.contains(descLower, loweredKeyword);
-        },
+        func (comp) : Bool {
+          let matchesKeyword = switch (keyword) {
+            case null true;
+            case (?k) {
+              let kLower = Text.toLowercase(k);
+              let nameMatch = Text.contains(Text.toLowercase(comp.name), #text kLower);
+              let descMatch = Text.contains(Text.toLowercase(comp.description), #text kLower);
+              nameMatch or descMatch
+            };
+          };
+
+          let matchesCategory = switch (filter.category) {
+            case null true;
+            case (?c) comp.category == c;
+          };
+
+          let matchesLevel = switch (filter.level) {
+            case null true;
+            case (?l) comp.level == l;
+          };
+
+          let matchesLocation = switch (filter.location) {
+            case null true;
+            case (?loc) comp.location == loc;
+          };
+
+          let matchesIsFree = switch (filter.isFree) {
+            case null true;
+            case (?f) comp.isFree == f;
+          };
+
+          let matchesScope = switch (filter.scope) {
+            case null true;
+            case (?s) comp.scope == s;
+          };
+
+          let matchesStatus = switch (filter.status) {
+            case null true;
+            case (?st) comp.status == st;
+          };
+
+          return matchesKeyword and matchesCategory and matchesLevel and matchesLocation
+                and matchesIsFree and matchesScope and matchesStatus;
+        }
       )
     );
-  };
+  }
+
 
   // =======================
   // === Admin / Testing ===
