@@ -1,5 +1,6 @@
 import React from 'react';
 import './Home.css';
+import { Link } from 'react-router-dom';
 
 function Home() {
   return (
@@ -9,7 +10,9 @@ function Home() {
           <ul className="navbar-top-right-list">
               <li>Tips</li>
               <li>Home</li>
-              <li>About</li>
+              <li>
+                <Link to="/about" style={{ color: 'white', textDecoration: 'none' }}>About</Link>
+              </li>
           </ul>
         </div>
       </nav>

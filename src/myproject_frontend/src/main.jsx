@@ -1,13 +1,14 @@
-
+// main.jsx atau index.jsx
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App'; // pastikan kamu punya App.jsx di folder yg sama
 import './index.css';
-
-import Home from './Home';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <title>CompVerse</title>
-    <Home />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );
