@@ -1,4 +1,12 @@
 // Import library dasar dari Motoko base
+import HashMap "mo:base/HashMap";
+import Iter "mo:base/Iter";
+import Array "mo:base/Array";
+import Principal "mo:base/Principal";
+import Time "mo:base/Time";
+import Text "mo:base/Text";
+import Nat64 "mo:base/Nat64";
+import Nat "mo:base/Nat";
 
 actor {
 
@@ -17,6 +25,7 @@ actor {
     name : Text;
     bio : Text;
     profilePicUrl : Text; // URL pfp
+    phoneNumber : Text;
     isOrganiser : Bool; // True jika user adalah organiser
     joinedCompetitions : [CompetitionId]; // Kompetisi yang diikuti
     ownedCompetitions : [CompetitionId]; // Kompetisi yang user selenggarakan
@@ -37,32 +46,23 @@ actor {
     participants : [UserId];
 
     // Attribute for filtering
-    category: Text;             // Hackathon, Data, UI/UX, Bussines Case, dll.
-    tags: [Text];
-    level: Text;                //  SD, SMP, SMA, MAHASISWA, dll.
-    location: Text;
-    deadline: Nat;              // Timestamp
-    isFree: Bool;
-    entryFee: Nat;
-    maxParticipants: Nat;
-    scope : CompetitionScope;   // International, National, Province, City, Other
-    status: CompetitionStatus;  // Upcoming, Ongoing, Completed, Cancelled, Draft
-    createdAt: Nat;             // Timestamp
+    category : Text; // Hackathon, Data, UI/UX, Bussines Case, dll.
+    tags : [Text];
+    level : Text; //  SD, SMP, SMA, MAHASISWA, dll.
+    location : Text;
+    deadline : Nat; // Timestamp
+    isFree : Bool;
+    entryFee : Nat;
+    maxParticipants : Nat;
+    scope : CompetitionScope; // International, National, Province, City, Other
+    status : CompetitionStatus; // Upcoming, Ongoing, Completed, Cancelled, Draft
+    createdAt : Nat; // Timestamp
   };
 
-  type CompetitionStatus = 
-    { #Upcoming } |
-    { #Ongoing } |
-    { #Completed } |
-    { #Cancelled } |
-    { #Draft };
+  type CompetitionStatus = { #Upcoming } | { #Ongoing } | { #Completed } | { #Cancelled } | { #Draft };
 
-  type CompetitionScope =
-    { #International } |
-    { #National } |
-    { #Province} |      // or state
-    { #City } |
-    { #Other };
+  // province / state
+  type CompetitionScope = { #International } | { #National } | { #Province } | { #City } | { #Other };
 
   // =================
   // === DATABASES ===
@@ -85,7 +85,7 @@ actor {
   // ====================================
 
   // Fungsi untuk register user baru
-  public func registerUser(username : Text, hashedPassword : Text, name : Text, bio : Text, isOrganiser : Bool, pfp : Text) : async Text {
+  public func registerUser(username : Text, hashedPassword : Text, name : Text, bio : Text, isOrganiser : Bool, pfp : Text, phone : Text) : async Text {
     let caller = msg.caller;
 
     if (userMap.get(caller) != null) {
@@ -103,6 +103,7 @@ actor {
       name = name;
       bio = bio;
       profilePicUrl = pfp;
+      phoneNumber = phone;
       isOrganiser = isOrganiser;
       joinedCompetitions = [];
       ownedCompetitions = [];
@@ -152,29 +153,44 @@ actor {
 
   public query func isLoggedIn() : async Bool {
     let caller = msg.caller;
-    switch (loggedInMap.get(caller)) {
-      case (?true) return true;
-      case _ return false;
-    };
+    return loggedInMap.get(caller) == ?true;
   };
 
   // User update profile, kalau ada yang tidak diubah gunakan null
-  public func updateUserProfile(nameOpt : ?Text, bioOpt : ?Text, pfpOpt : ?Text) : async Text {
+  public func updateUserProfile(nameOpt : ?Text, bioOpt : ?Text, pfpOpt : ?Text, phoneOpt : ?Text) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
       case null return "User not registered.";
       case (?user) {
+        let newName = switch nameOpt { case (null) user.name; case (?n) n };
+        let newBio = switch bioOpt { case (null) user.bio; case (?b) b };
+        let newPic = switch pfpOpt {
+          case (null) user.profilePicUrl;
+          case (?p) p;
+        };
+        let newPhone = switch phoneOpt {
+          case (null) user.phoneNumber;
+          case (?ph) ph;
+        };
+
+        if (
+          newName == user.name and
+          newBio == user.bio and
+          newPic == user.profilePicUrl and
+          newPhone == user.phoneNumber
+        ) {
+          return "Nothing to update.";
+        };
+
         let updatedUser : User = {
           id = user.id;
           username = user.username;
           password = user.password;
-          name = switch (nameOpt) { case (?n) n; case null user.name };
-          bio = switch (bioOpt) { case (?b) b; case null user.bio };
-          profilePicUrl = switch (pfpOpt) {
-            case (?p) p;
-            case null user.profilePicUrl;
-          };
+          name = newName;
+          bio = newBio;
+          profilePicUrl = newPic;
+          phoneNumber = newPhone;
           isOrganiser = user.isOrganiser;
           joinedCompetitions = user.joinedCompetitions;
           ownedCompetitions = user.ownedCompetitions;
@@ -204,6 +220,7 @@ actor {
           name = user.name;
           bio = user.bio;
           profilePicUrl = user.profilePicUrl;
+          phoneNumber = user.phoneNumber;
           isOrganiser = user.isOrganiser;
           joinedCompetitions = user.joinedCompetitions;
           ownedCompetitions = user.ownedCompetitions;
@@ -221,26 +238,26 @@ actor {
 
   // Fungsi untuk membuat kompetisi (khusus organiser)
   public func createCompetition(
-    id: Text,
-    name: Text,
-    desc: Text,
-    category: Text,
-    tags: [Text],
-    level: Text,
-    location: Text,
-    deadline: Nat,
-    isFree: Bool,
-    entryFee: Nat,
-    maxParticipants: Nat,
-    scope: CompetitionScope,
-    status: CompetitionStatus
+    id : Text,
+    name : Text,
+    desc : Text,
+    category : Text,
+    tags : [Text],
+    level : Text,
+    location : Text,
+    deadline : Nat,
+    isFree : Bool,
+    entryFee : Nat,
+    maxParticipants : Nat,
+    scope : CompetitionScope,
+    status : CompetitionStatus,
   ) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
       case null return "User not registered.";
       case (?user) {
-        if (!user.isOrganiser) return "Only organisers can create competitions.";
+        if (! user.isOrganiser) return "Only organisers can create competitions.";
         if (competitionMap.get(id) != null) return "Competition ID already exists.";
 
         let newComp : Competition = {
@@ -259,7 +276,7 @@ actor {
           maxParticipants = maxParticipants;
           scope = scope;
           status = status;
-          createdAt = Time.now(); // Timestamp saat ini
+          createdAt = Nat64.toNat(Nat64.fromIntWrap(Time.now()));
         };
 
         competitionMap.put(id, newComp);
@@ -271,6 +288,7 @@ actor {
           name = user.name;
           bio = user.bio;
           profilePicUrl = user.profilePicUrl;
+          phoneNumber = user.phoneNumber;
           isOrganiser = user.isOrganiser;
           joinedCompetitions = user.joinedCompetitions;
           ownedCompetitions = Array.append(user.ownedCompetitions, [id]);
@@ -282,7 +300,6 @@ actor {
       };
     };
   };
-
 
   public func updateCompetition(compId : CompetitionId, nameOpt : ?Text, descOpt : ?Text) : async Text {
     let caller = msg.caller;
@@ -303,6 +320,17 @@ actor {
           };
           organiser = comp.organiser;
           participants = comp.participants;
+          category = comp.category;
+          tags = comp.tags;
+          level = comp.level;
+          location = comp.location;
+          deadline = comp.deadline;
+          isFree = comp.isFree;
+          entryFee = comp.entryFee;
+          maxParticipants = comp.maxParticipants;
+          scope = comp.scope;
+          status = comp.status;
+          createdAt = comp.createdAt;
         };
 
         competitionMap.put(compId, updatedComp);
@@ -326,17 +354,34 @@ actor {
           return "User is not a participant.";
         };
 
-        // Hapus user dari participant competition
-        let updatedComp = {
+        // Hapus target dari list participant
+        let newParticipants = Array.filter<UserId>(
+          comp.participants,
+          func(p) { p != target },
+        );
+
+        let updatedComp : Competition = {
           id = comp.id;
           name = comp.name;
           description = comp.description;
           organiser = comp.organiser;
-          participants = Array.filter<UserId>(comp.participants, func(p) { p != target });
+          participants = newParticipants;
+          category = comp.category;
+          tags = comp.tags;
+          level = comp.level;
+          location = comp.location;
+          deadline = comp.deadline;
+          isFree = comp.isFree;
+          entryFee = comp.entryFee;
+          maxParticipants = comp.maxParticipants;
+          scope = comp.scope;
+          status = comp.status;
+          createdAt = comp.createdAt;
         };
+
         competitionMap.put(compId, updatedComp);
 
-        // Hapus competition dari list joined competition user
+        // Hapus competition dari joinedCompetitions milik user
         switch (userMap.get(target)) {
           case null {};
           case (?user) {
@@ -347,6 +392,7 @@ actor {
               name = user.name;
               bio = user.bio;
               profilePicUrl = user.profilePicUrl;
+              phoneNumber = user.phoneNumber;
               isOrganiser = user.isOrganiser;
               joinedCompetitions = Array.filter<CompetitionId>(
                 user.joinedCompetitions,
@@ -385,6 +431,7 @@ actor {
                 name = user.name;
                 bio = user.bio;
                 profilePicUrl = user.profilePicUrl;
+                phoneNumber = user.phoneNumber;
                 isOrganiser = user.isOrganiser;
                 joinedCompetitions = Array.filter<CompetitionId>(
                   user.joinedCompetitions,
@@ -408,6 +455,7 @@ actor {
               name = organiser.name;
               bio = organiser.bio;
               profilePicUrl = organiser.profilePicUrl;
+              phoneNumber = organiser.phoneNumber;
               isOrganiser = organiser.isOrganiser;
               joinedCompetitions = organiser.joinedCompetitions;
               ownedCompetitions = Array.filter<CompetitionId>(
@@ -417,7 +465,7 @@ actor {
             };
             userMap.put(caller, updatedOrganiser);
           };
-          case null {}; // Tidak mungkin terjadi jika valid
+          case null {}; // Tidak mungkin jika valid
         };
 
         // Hapus kompetisinya dari map
@@ -445,11 +493,13 @@ actor {
               return "Already joined.";
             };
 
-            if (comp.maxParticipants <= comp.participants.size()) {
+            if (Array.size(comp.participants) >= comp.maxParticipants) {
               return "Participant limit reached.";
             };
 
-            let now = Time.now() / 1_000_000_000; // Time in seconds
+            let now : Nat =
+              Nat64.toNat(Nat64.fromIntWrap(Time.now() / (1_000_000_000 : Int)));
+
             if (now > comp.deadline) {
               return "Registration deadline has passed.";
             };
@@ -461,6 +511,7 @@ actor {
               name = user.name;
               bio = user.bio;
               profilePicUrl = user.profilePicUrl;
+              phoneNumber = user.phoneNumber;
               isOrganiser = user.isOrganiser;
               joinedCompetitions = Array.append(user.joinedCompetitions, [compId]);
               ownedCompetitions = user.ownedCompetitions;
@@ -494,7 +545,6 @@ actor {
     };
   };
 
-
   // User keluar dari kompetisi
   public func unjoinCompetition(compId : CompetitionId) : async Text {
     let caller = msg.caller;
@@ -517,6 +567,7 @@ actor {
               name = user.name;
               bio = user.bio;
               profilePicUrl = user.profilePicUrl;
+              phoneNumber = user.phoneNumber;
               isOrganiser = user.isOrganiser;
               joinedCompetitions = Array.filter<Text>(user.joinedCompetitions, func(c) { c != compId });
               ownedCompetitions = user.ownedCompetitions;
@@ -524,17 +575,26 @@ actor {
 
             userMap.put(caller, updatedUser);
 
-            // Update competition
-            let updatedComp = {
+            // Update competition — FULL RECORD REQUIRED
+            let updatedComp : Competition = {
               id = comp.id;
               name = comp.name;
               description = comp.description;
               organiser = comp.organiser;
-              participants = Array.filter<Principal>(
-                comp.participants,
-                func(p) { p != caller },
-              );
+              participants = Array.filter<Principal>(comp.participants, func(p) { p != caller });
+              category = comp.category;
+              tags = comp.tags;
+              level = comp.level;
+              location = comp.location;
+              deadline = comp.deadline;
+              isFree = comp.isFree;
+              entryFee = comp.entryFee;
+              maxParticipants = comp.maxParticipants;
+              scope = comp.scope;
+              status = comp.status;
+              createdAt = comp.createdAt;
             };
+
             competitionMap.put(compId, updatedComp);
 
             return "You have unjoined the competition.";
@@ -649,20 +709,20 @@ actor {
 
   // Search competitions by keyword (dari nama / description) and filter
   public query func searchCompetitions(
-    keyword: ?Text,
-    filter: CompetitionFilter
+    keyword : ?Text,
+    filter : CompetitionFilter,
   ) : async [Competition] {
     return Iter.toArray(
       Iter.filter<Competition>(
         competitionMap.vals(),
-        func (comp) : Bool {
+        func(comp) : Bool {
           let matchesKeyword = switch (keyword) {
             case null true;
             case (?k) {
               let kLower = Text.toLowercase(k);
-              let nameMatch = Text.contains(Text.toLowercase(comp.name), #text kLower);
-              let descMatch = Text.contains(Text.toLowercase(comp.description), #text kLower);
-              nameMatch or descMatch
+              let nameMatch = Text.contains(Text.toLowercase(comp.name), kLower);
+              let descMatch = Text.contains(Text.toLowercase(comp.description), kLower);
+              nameMatch or descMatch;
             };
           };
 
@@ -696,13 +756,20 @@ actor {
             case (?st) comp.status == st;
           };
 
-          return matchesKeyword and matchesCategory and matchesLevel and matchesLocation
-                and matchesIsFree and matchesScope and matchesStatus;
-        }
+          return matchesKeyword and matchesCategory and matchesLevel and matchesLocation and matchesIsFree and matchesScope and matchesStatus;
+        },
       )
     );
-  }
+  };
 
+  type CompetitionFilter = {
+    category : ?Text;
+    level : ?Text;
+    location : ?Text;
+    isFree : ?Bool;
+    scope : ?CompetitionScope;
+    status : ?CompetitionStatus;
+  };
 
   // =======================
   // === Admin / Testing ===
@@ -718,12 +785,23 @@ actor {
         for (compId in user.joinedCompetitions.vals()) {
           switch (competitionMap.get(compId)) {
             case (?comp) {
-              let updatedComp = {
+              let updatedComp : Competition = {
                 id = comp.id;
                 name = comp.name;
                 description = comp.description;
                 organiser = comp.organiser;
-                participants = Array.filter(comp.participants, func(p) { p != caller });
+                participants = Array.filter<UserId>(comp.participants, func(p) { p != caller });
+                category = comp.category;
+                tags = comp.tags;
+                level = comp.level;
+                location = comp.location;
+                deadline = comp.deadline;
+                isFree = comp.isFree;
+                entryFee = comp.entryFee;
+                maxParticipants = comp.maxParticipants;
+                scope = comp.scope;
+                status = comp.status;
+                createdAt = comp.createdAt;
               };
               competitionMap.put(compId, updatedComp);
             };
@@ -731,16 +809,15 @@ actor {
           };
         };
 
-        // Hapus kompetisi yang ia selenggarakan (opsional: bisa batasi)
+        // Hapus semua kompetisi yang diselenggarakan user ini
         for (cid in user.ownedCompetitions.vals()) {
           ignore deleteCompetition(cid);
         };
 
-        // Hapus user dari usernameMap
+        // Hapus dari usernameMap, userMap, dan loggedInMap
         usernameMap.delete(user.username);
-
-        // Hapus user dari userMap
         userMap.delete(caller);
+        loggedInMap.delete(caller);
 
         return "User deleted.";
       };
