@@ -73,7 +73,7 @@ function About() {
             <p>Get to know the people who are part of our journey.</p>
             <img src="/OurTeamFoto.png" alt="Our Team" className="our-team-image" />
             <div className="our-team-overlay">
-              <Link className="see-more-button" to="/team">See more</Link>
+              <Link className="see-more-button"  to="/compverse-team" style={{ color: 'white', textDecoration: 'none' }}>See more</Link>
             </div>
           </div>
         </div>
