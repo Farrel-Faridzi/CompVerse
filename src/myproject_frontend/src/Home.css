@@ -1,6 +1,4 @@
-body {
-  padding-top: 60px;  /* sesuaikan dengan tinggi navbar-top */
-}
+
 
 * {
   box-sizing: border-box;
@@ -12,11 +10,13 @@ body, html {
   padding: 0;
   background-color: #ffffff; /* Biar background putih */
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .home-container {
   max-width: 1440px;
   margin: 0 auto;
+  overflow-x: hidden;
 }
 
 .navbar-top-right-list {
@@ -41,7 +41,6 @@ body, html {
   z-index: 1000;         /* <- biar gak ketutupan */
   background: linear-gradient(to right, #827DFF, #130f5d); /* warna contoh */
   padding: 0px 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .navbar-top-right-list li {
@@ -65,14 +64,16 @@ body, html {
 }
 
 .navbar-middle {
-  position: relative;
-  width: 100vw; /* full viewport width */
+  position: fixed;
+  top: 55px; /* agar tidak tabrakan dengan navbar-top */
+  left: 0;
+  width: 100%;
+  z-index: 999;
   background-color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 30px;
-  margin-top: 4%;
+  padding: 0 20px;
 }
 
 .navbar-middle-right {
@@ -147,15 +148,18 @@ body, html {
 
 .main-section {
   display: flex;
+  position: relative;
   justify-content: space-between;
   align-items: center;
-  padding: 80px 100px;
+  padding: 80px 175px;
   gap: 40px;
   flex-wrap: wrap;
+  width: 100%;
+  padding-top: 200px;
 }
 
 .main-left {
-  max-width: 500px;
+  max-width: 50%;
 }
 
 .main-heading {
@@ -183,8 +187,9 @@ body, html {
 
 .main-right {
   position: relative;
-  width: 100%;
-  max-width: 500px;
+  width: 50%;
+  max-width: 100%;
+  padding-left: 100px;
 }
 
 .main-image-wrapper {
@@ -220,25 +225,26 @@ body, html {
 }
 
 .badge img {
-  height: 24px;
+  height: 50px;
   width: 24px;
 }
 
 /* Badge positions (atur sesuai preferensi) */
 .badge-1 {
   top: 10px;
-  left: -20px;
+  left: 20px;
 }
 .badge-2 {
   top: 10px;
-  right: -20px;
+  right: -100px;
 }
 .badge-3 {
   bottom: 10px;
-  left: -20px;
+  left: 20px;
 }
 .badge-4 {
   bottom: 10px;
-  right: -20px; 
+  right: -100px; 
 }
+
 

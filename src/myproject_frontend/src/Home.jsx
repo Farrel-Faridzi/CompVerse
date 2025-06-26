@@ -48,22 +48,22 @@ function Home() {
 
           {/* Badge di luar wrapper supaya tidak terpotong */}
           <div className="badge badge-1">
-            <img src="/icon1.png" alt="" />
+            <img src="/TotalHadiah.svg" alt="" />
             <span>Total Hadiah Terjamin<br /><strong>Rp 850.000.000+</strong></span>
           </div>
 
           <div className="badge badge-2">
-            <img src="/icon2.png" alt="" />
+            <img src="/Prestasi.svg" alt="" />
             <span>Prestasi Telah Diterbitkan<br /><strong>15.000+ NFT</strong></span>
           </div>
 
           <div className="badge badge-3">
-            <img src="/icon3.png" alt="" />
+            <img src="/CVPrestasi.svg" alt="" />
             <span>CV Prestasi On-Chain<br />Anti-Pemalsuan</span>
           </div>
 
           <div className="badge badge-4">
-            <img src="/icon4.png" alt="" />
+            <img src="/ICPLandingPage.svg" alt="" />
             <span>Dibangun di atas<br />Internet Computer</span>
           </div>
         </div>
