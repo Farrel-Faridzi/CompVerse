@@ -30,6 +30,14 @@
 
 }
 
+.foto-barisan {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: nowrap; /* Jangan wrap ke bawah */
+}
+
+
 /* === Judul Tim === */
 .judul-team judul {
   font-size: 36px;
