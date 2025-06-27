@@ -4,20 +4,22 @@ import './CompVerseTeam.css';
 import './About.css';
 
 function CompVerseTeam() {
-    return (
+  return (
     <div className="home-container">
+      {/* Navbar atas */}
       <nav className="navbar-top">
         <div className="navbar-top-right">
           <ul className="navbar-top-right-list">
-              <li>Tips</li>
-              <li>Home</li>
-              <li>
-                <Link to="/about" style={{ color: 'white', textDecoration: 'none' }}>About</Link>
-              </li>
+            <li>Tips</li>
+            <li>Home</li>
+            <li>
+              <Link to="/about" style={{ color: 'white', textDecoration: 'none' }}>About</Link>
+            </li>
           </ul>
         </div>
       </nav>
 
+      {/* Navbar tengah */}
       <div className="navbar-middle">
         <div className="navbar-middle-left">
           <div className="navbar-middle-left-logo">
@@ -35,16 +37,71 @@ function CompVerseTeam() {
         </div>
       </div>
 
-      <div className="breadcrumb">
-        <Link to="/home" style={{color:'black'}}>Home</Link>
-        <span style={{color:'black'}}> / </span>
-        <Link to="/about">About CompVerse</Link>
-        <span style={{color: 'black'}}> / </span>
-        <span style={{color:'black'}}>Our Team</span>
+      {/* Path info */}
+      <div className="path-info">
+        <Link to="/home" style={{ color: 'blue' }}>Home</Link>
+        <span style={{ color: 'black' }}> / </span>
+        <Link to="/about" style={{ color: 'blue' }}>About CompVerse</Link>
+        <span style={{ color: 'black' }}> / </span>
+        <span style={{ color: 'black' }}>Our Team</span>
       </div>
 
+      {/* Konten utama tim */}
+      <div className="team-container">
+        <div className="judul-team">
+          <judul>CompVerse Team</judul>
+          <description>We are a team working together to achieve a common goal. Get</description>
+          <description>to know the people who are part of our journey.</description>
+        </div>
+
+        {/* Foto anggota tim */}
+        <div className="foto-team">
+          {/* Baris pertama (2 orang) */}
+          <div className="foto-barisan">
+            <div className="team-member">
+              <img src="/Farrel.svg" alt="Farrel Faridzi L." />
+              <div className="name">Farrel Faridzi L.</div>
+              <div className="role">Team Leader</div>
+            </div>
+            <div className="team-member">
+              <img src="/Touya.svg" alt="Randuichi Touya" />
+              <div className="name">Randuichi Touya</div>
+              <div className="role">Fullstack Dev</div>
+            </div>
+          </div>
+
+          {/* Baris kedua (3 orang) */}
+          <div className="foto-barisan">
+            <div className="team-member">
+              <img src="/Juma.svg" alt="Juma Jordan B." />
+              <div className="name">Juma Jordan B.</div>
+              <div className="role">Product Manager</div>
+            </div>
+            <div className="team-member">
+              <img src="/Salman.svg" alt="M. Salman Fahri" />
+              <div className="name">M. Salman Fahri</div>
+              <div className="role">Front-End Dev</div>
+            </div>
+            <div className="team-member">
+              <img src="/Justin.svg" alt="Justin Dwitama S." />
+              <div className="name">Justin Dwitama S.</div>
+              <div className="role">UI/UX Designer</div>
+            </div>
+          </div>
+        </div>
+
+
+        {/* Penutup */}
+        <div className="penutup-team">
+          <judulpenutup>Reach Your Peak Achievement, With Us!</judulpenutup>
+          <descriptionpenutup>With the spirit of fairness and innovation, we build this platform to open a</descriptionpenutup>
+          <descriptionpenutup>new era of transparent competition. We believe that every participant</descriptionpenutup>
+          <descriptionpenutup>deserves an equal opportunity and every victory is a real proof that should</descriptionpenutup>
+          <descriptionpenutup>be recognized globally and forever.</descriptionpenutup>
+        </div>
+      </div>
     </div>
-    );
+  );
 }
 
 export default CompVerseTeam;
