@@ -26,6 +26,16 @@ function Login() {
           </p>
         </form>
       </div>
+
+      <footer className="signup-footer-links">
+              <img src="/LogoCompVerseTulisan.png" alt="CompVerse Logo" />
+              <div className="footer-links">
+                <Link to="#">Terms & Conditions</Link>
+                <Link to="#">Privacy Policy</Link>
+                <Link to="/about">About CompVerse</Link>
+              </div>
+              <span>© 2023 Copyright by IK Developers. All rights reserved.</span>
+        </footer>
     </div>
   );
 }

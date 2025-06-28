@@ -6,6 +6,7 @@
   min-height: 100vh;
   background-color: #ffffff;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 1300px;
 }
 
 .navlog-top {
@@ -20,6 +21,7 @@
 
 .logo-signup {
   height: 40px;
+  padding-right: 1300px;
 }
 
 .login-box {
@@ -53,6 +55,8 @@
   border: 1px solid #ccc;
   width: 100%;
   box-sizing: border-box;
+  color: black;
+  background-color: white;
 }
 
 .password-row {
