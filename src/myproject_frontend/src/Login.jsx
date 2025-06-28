@@ -1,32 +1,33 @@
-import { useState } from "react";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import './Login.css';
 
-function LoginForm() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    console.log("Username:", username);
-    console.log("Password:", password);
-  };
-
+function Login() {
   return (
-    <form onSubmit={handleLogin}>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button type="submit">Login</button>
-    </form>
+    <div className="login-container">
+      <nav className="navsign-top">
+        <img src="/LogoCompVerseTulisan.png" alt="CompVerse Logo" className="logo-signup" />
+      </nav>
+      <div className="login-box">
+        <form className="login-form">
+          <label>Email</label>
+          <input type="email" placeholder="Enter your email" />
+
+          <label>Password</label>
+          <div className="password-row">
+            <input type="password" placeholder="Enter your password" />
+            <Link to="#" className="forgot-password">Forgot the password?</Link>
+          </div>
+
+          <button className="login-btn" type="submit">Sign in</button>
+
+          <p className="register-text">
+            New in CompVerse? <Link to="/sign-up">Register Here</Link>
+          </p>
+        </form>
+      </div>
+    </div>
   );
 }
 
-export default LoginForm;
+export default Login;

@@ -30,7 +30,9 @@ function Home() {
             <li>Search Competition</li>
             <li>Host List</li>
           </ul>
+          <Link to="/sign-up" style={{ textDecoration: 'none' }}>
           <button className="sign-up-button">Sign In</button>
+          </Link>
         </div>
       </div>
 
