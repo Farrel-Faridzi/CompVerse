@@ -1,4 +1,4 @@
-/* Container utama */
+
 .sign-up-container {
   display: flex;
   flex-direction: column;
@@ -8,8 +8,6 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   width: 1440px;
 }
-
-/* Logo atas */
 .signup-logo-container,
 .navsign-top {
   width: 100%;
@@ -27,7 +25,6 @@
   height: 40px;
 }
 
-/* Form wrapper */
 .signup-form-wrapper {
   margin-top: 30px;
   width: 100%;
@@ -48,7 +45,6 @@
   font-size: 14px;
 }
 
-/* Form */
 .signup-form {
   display: flex;
   flex-direction: column;
@@ -83,7 +79,6 @@
   margin-bottom: 10px;
 }
 
-/* Nomor telepon dua kolom */
 .phone-input {
   display: flex;
   gap: 6px;
@@ -99,7 +94,6 @@
   color: black;
 }
 
-/* Checkbox */
 .checkbox-wrapper {
   display: flex;
   align-items: flex-start;
@@ -111,7 +105,6 @@
     padding-right: 50px;
 }
 
-/* Tombol */
 .signup-btn {
   margin-top: 10px;
   background-color: #4338ca;
@@ -128,7 +121,7 @@
   background-color: #3730a3;
 }
 
-/* Login text */
+
 .signup-footer {
   margin-top: 20px;
   font-size: 13px;
@@ -140,7 +133,6 @@
   text-decoration: none;
 }
 
-/* Footer bawah */
 .signup-footer-links {
   margin-top: 50px;
   text-align: center;

@@ -1,4 +1,4 @@
-/* === Path Info / Breadcrumb === */
+
 .path-info {
   padding: 10px 20px;
   margin-top: 10px;
@@ -21,7 +21,6 @@
   text-decoration: underline;
 }
 
-/* === Container Tim === */
 .team-container {
   padding: 60px 100px;
   max-width: 1200px;
@@ -34,11 +33,11 @@
   display: flex;
   justify-content: center;
   gap: 30px;
-  flex-wrap: nowrap; /* Jangan wrap ke bawah */
+  flex-wrap: nowrap;
 }
 
 
-/* === Judul Tim === */
+
 .judul-team judul {
   font-size: 36px;
   font-weight: bold;
@@ -55,7 +54,7 @@
   margin-bottom: 5px;
 }
 
-/* === Grid Foto Anggota Tim === */
+
 .foto-team {
   display: flex;
   flex-wrap: wrap;
@@ -65,7 +64,6 @@
   margin-bottom: 50px;
 }
 
-/* === Kartu Anggota Tim === */
 .team-member {
   width: 180px;
   border-radius: 16px;
@@ -100,7 +98,6 @@
   padding: 6px 8px 10px;
 }
 
-/* === Penutup Tim === */
 .penutup-team {
   margin-top: 50px;
 }
@@ -122,7 +119,6 @@
   line-height: 1.6;
 }
 
-/* === Responsive === */
 @media screen and (max-width: 768px) {
   .team-member {
     width: 45%;

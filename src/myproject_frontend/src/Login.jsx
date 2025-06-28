@@ -5,7 +5,7 @@ import './Login.css';
 function Login() {
   return (
     <div className="login-container">
-      <nav className="navsign-top">
+      <nav className="navlog-top">
         <img src="/LogoCompVerseTulisan.png" alt="CompVerse Logo" className="logo-signup" />
       </nav>
       <div className="login-box">

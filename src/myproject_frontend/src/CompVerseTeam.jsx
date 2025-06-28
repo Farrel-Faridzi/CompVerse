@@ -6,7 +6,6 @@ import './About.css';
 function CompVerseTeam() {
   return (
     <div className="home-container">
-      {/* Navbar atas */}
       <nav className="navbar-top">
         <div className="navbar-top-right">
           <ul className="navbar-top-right-list">
@@ -19,7 +18,6 @@ function CompVerseTeam() {
         </div>
       </nav>
 
-      {/* Navbar tengah */}
       <div className="navbar-middle">
         <div className="navbar-middle-left">
           <div className="navbar-middle-left-logo">
@@ -37,7 +35,6 @@ function CompVerseTeam() {
         </div>
       </div>
 
-      {/* Path info */}
       <div className="path-info">
         <Link to="/home" style={{ color: 'blue' }}>Home</Link>
         <span style={{ color: 'black' }}> / </span>
@@ -46,7 +43,6 @@ function CompVerseTeam() {
         <span style={{ color: 'black' }}>Our Team</span>
       </div>
 
-      {/* Konten utama tim */}
       <div className="team-container">
         <div className="judul-team">
           <judul>CompVerse Team</judul>
@@ -54,9 +50,7 @@ function CompVerseTeam() {
           <description>to know the people who are part of our journey.</description>
         </div>
 
-        {/* Foto anggota tim */}
         <div className="foto-team">
-          {/* Baris pertama (2 orang) */}
           <div className="foto-barisan">
             <div className="team-member">
               <img src="/Farrel.svg" alt="Farrel Faridzi L." />
@@ -70,7 +64,6 @@ function CompVerseTeam() {
             </div>
           </div>
 
-          {/* Baris kedua (3 orang) */}
           <div className="foto-barisan">
             <div className="team-member">
               <img src="/Juma.svg" alt="Juma Jordan B." />
@@ -90,8 +83,6 @@ function CompVerseTeam() {
           </div>
         </div>
 
-
-        {/* Penutup */}
         <div className="penutup-team">
           <judulpenutup>Reach Your Peak Achievement, With Us!</judulpenutup>
           <descriptionpenutup>With the spirit of fairness and innovation, we build this platform to open a</descriptionpenutup>

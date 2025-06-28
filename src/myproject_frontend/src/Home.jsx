@@ -48,7 +48,6 @@ function Home() {
             <img src="/Image 1.png" alt="Trophy celebration" className="main-image" />
           </div>
 
-          {/* Badge di luar wrapper supaya tidak terpotong */}
           <div className="badge badge-1">
             <img src="/TotalHadiah.svg" alt="" />
             <span>Total Hadiah Terjamin<br /><strong>Rp 850.000.000+</strong></span>

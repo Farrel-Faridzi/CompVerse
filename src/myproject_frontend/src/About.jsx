@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './About.css'; // Pastikan kamu buat file ini
+import './About.css';
 
 function About() {
   return (
