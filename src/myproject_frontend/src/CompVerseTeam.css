@@ -1,0 +1,149 @@
+
+.path-info {
+  padding: 10px 20px;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #333;
+  padding-bottom: 0px;
+  padding-top: 120px;
+  padding-left: 40px;
+  font-size: 1.2rem;
+
+}
+
+.path-info a {
+  text-decoration: none;
+  font-weight: 500;
+  color: #0066cc;
+}
+
+.path-info a:hover {
+  text-decoration: underline;
+}
+
+.team-container {
+  padding: 60px 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+
+}
+
+.foto-barisan {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: nowrap;
+}
+
+
+
+.judul-team judul {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  display: block;
+  color: #000;  
+}
+
+.judul-team description {
+  font-size: 18px;
+  color: #555;
+  display: block;
+  line-height: 1.4;
+  margin-bottom: 5px;
+}
+
+
+.foto-team {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 40px;
+  margin-bottom: 50px;
+}
+
+.team-member {
+  width: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.team-member:hover {
+  transform: translateY(-6px);
+}
+
+.team-member img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.team-member .name {
+  font-weight: bold;
+  color: #fff;
+  background-color: #3d38e0;
+  padding: 10px 8px;
+  font-size: 14px;
+}
+
+.team-member .role {
+  font-size: 13px;
+  color: #444;
+  background-color: #f5f5f5;
+  padding: 6px 8px 10px;
+}
+
+.penutup-team {
+  margin-top: 50px;
+}
+
+.penutup-team judulpenutup {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  display: block;
+  color: #000;
+}
+
+.penutup-team descriptionpenutup {
+  display: block;
+  font-size: 16px;
+  color: #444;
+  max-width: 800px;
+  margin: 4px auto;
+  line-height: 1.6;
+}
+
+@media screen and (max-width: 768px) {
+  .team-member {
+    width: 45%;
+  }
+
+  .judul-team judul {
+    font-size: 28px;
+  }
+
+  .penutup-team judulpenutup {
+    font-size: 22px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .team-member {
+    width: 100%;
+  }
+
+  .team-member .name,
+  .team-member .role {
+    font-size: 13px;
+  }
+
+  .path-info {
+    font-size: 13px;
+  }
+}

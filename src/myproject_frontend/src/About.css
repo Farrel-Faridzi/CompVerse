@@ -1,0 +1,132 @@
+.about-banner {
+  background-image: url('/Image%202.png');
+  background-size: cover;
+  background-position: center;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  padding-left: 40px;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  width: 100vw;
+  padding-top: 120px;
+}
+
+
+.breadcrumb {
+  margin: 20px 40px;
+  font-size: 1rem;
+}
+
+.breadcrumb a {
+  color: blue;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.about-section {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+
+.about-content {
+  display: flex;
+  gap: 100px;
+  align-items: flex-start;
+  padding-left: 100px;
+}
+
+.content-logo img {
+  width: 200px;
+  height: auto;
+}
+
+.content-text p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 16px;
+  max-width: 600px;
+}
+
+.about-ourteam {
+  margin-top: 0px;
+  display: flex;
+  justify-content: center; /* tengah horizontal */
+  align-items: flex-end;   /* bawah secara vertikal */
+}
+
+.our-team-container {
+  background: linear-gradient(90deg, #5b5fff, #0e0e22);
+  border-radius: 20px;
+  padding: 30px 40px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  width: 50%;
+
+}
+
+.our-team-container h2 {
+  font-size: 2rem;
+  margin: 0;
+}
+
+.our-team-container p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.our-team-container img {
+  width: 100%;
+  max-width: 250px;
+  height: auto;
+  border-radius: 10px;
+}
+
+.our-team-image {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  border-radius: 10px;
+}
+
+.our-team-overlay {
+  display: flex;
+  justify-content: flex-end; /* geser tombol ke kanan */
+  margin-top: 10px;
+}
+
+.see-more-button {
+  position: relative;
+  color: #e0e0e0;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding-bottom: 2px;
+}
+
+.see-more-button::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  height: 2px;
+  background-color: white;
+  transition: width 0.3s ease;
+}
+
+.see-more-button:hover::after {
+  width: 100%;
+}
+
+
