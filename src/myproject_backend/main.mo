@@ -59,10 +59,21 @@ actor {
     createdAt : Nat; // Timestamp
   };
 
-  type CompetitionStatus = { #Upcoming } | { #Ongoing } | { #Completed } | { #Cancelled } | { #Draft };
+  type CompetitionStatus = {
+    #Upcoming;
+    #Ongoing;
+    #Completed;
+    #Cancelled;
+    #Draft;
+  };
 
   // province / state
-  type CompetitionScope = { #International } | { #National } | { #Province } | { #City } | { #Other };
+  type CompetitionScope = { #International;
+    #National; 
+    #Province;
+    #City;
+    #Other;
+  };
 
   // =================
   // === DATABASES ===
@@ -85,7 +96,7 @@ actor {
   // ====================================
 
   // Fungsi untuk register user baru
-  public func registerUser(username : Text, hashedPassword : Text, name : Text, bio : Text, isOrganiser : Bool, pfp : Text, phone : Text) : async Text {
+  public shared (msg) func registerUser(username : Text, hashedPassword : Text, name : Text, bio : Text, isOrganiser : Bool, pfp : Text, phone : Text) : async Text {
     let caller = msg.caller;
 
     if (userMap.get(caller) != null) {
@@ -135,7 +146,7 @@ actor {
     };
   };
 
-  public func logout() : async Text {
+  public shared (msg) func logout() : async Text {
     let caller = msg.caller;
 
     if (loggedInMap.get(caller) == null or loggedInMap.get(caller) == ?false) {
@@ -146,18 +157,18 @@ actor {
     return "Logout successful.";
   };
 
-  public query func getLoggedInUser() : async ?User {
+  public shared query (msg) func getLoggedInUser() : async ?User {
     let caller = msg.caller;
     return userMap.get(caller);
   };
 
-  public query func isLoggedIn() : async Bool {
+  public shared query (msg) func isLoggedIn() : async Bool {
     let caller = msg.caller;
     return loggedInMap.get(caller) == ?true;
   };
 
   // User update profile, kalau ada yang tidak diubah gunakan null
-  public func updateUserProfile(nameOpt : ?Text, bioOpt : ?Text, pfpOpt : ?Text, phoneOpt : ?Text) : async Text {
+  public shared (msg) func updateUserProfile(nameOpt : ?Text, bioOpt : ?Text, pfpOpt : ?Text, phoneOpt : ?Text) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
@@ -203,7 +214,7 @@ actor {
   };
 
   // Update password user
-  public func updatePassword(oldPassword : Text, newPassword : Text) : async Text {
+  public shared (msg) func updatePassword(oldPassword : Text, newPassword : Text) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
@@ -237,7 +248,7 @@ actor {
   // ==============================
 
   // Fungsi untuk membuat kompetisi (khusus organiser)
-  public func createCompetition(
+  public shared (msg) func createCompetition(
     id : Text,
     name : Text,
     desc : Text,
@@ -250,14 +261,14 @@ actor {
     entryFee : Nat,
     maxParticipants : Nat,
     scope : CompetitionScope,
-    status : CompetitionStatus,
+    status : CompetitionStatus
   ) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
       case null return "User not registered.";
       case (?user) {
-        if (! user.isOrganiser) return "Only organisers can create competitions.";
+        if (not user.isOrganiser) return "Only organisers can create competitions.";
         if (competitionMap.get(id) != null) return "Competition ID already exists.";
 
         let newComp : Competition = {
@@ -301,7 +312,7 @@ actor {
     };
   };
 
-  public func updateCompetition(compId : CompetitionId, nameOpt : ?Text, descOpt : ?Text) : async Text {
+  public shared (msg) func updateCompetition(compId : CompetitionId, nameOpt : ?Text, descOpt : ?Text) : async Text {
     let caller = msg.caller;
 
     switch (competitionMap.get(compId)) {
@@ -340,7 +351,7 @@ actor {
   };
 
   // Kick participant dari competition (organiser function)
-  public func kickParticipant(compId : CompetitionId, target : UserId) : async Text {
+  public shared (msg) func kickParticipant(compId : CompetitionId, target : UserId) : async Text {
     let caller = msg.caller;
 
     switch (competitionMap.get(compId)) {
@@ -350,7 +361,7 @@ actor {
           return "Only the organiser can kick participants.";
         };
 
-        if (! Iter.contains<UserId>(comp.participants.vals(), target, Principal.equal)) {
+        if (not Array.contains<UserId>(comp.participants.vals(), target, Principal.equal)) {
           return "User is not a participant.";
         };
 
@@ -410,7 +421,7 @@ actor {
   };
 
   // Hapus kompetisi jika caller adalah organiser-nya
-  public func deleteCompetition(compId : CompetitionId) : async Text {
+  public shared (msg) func deleteCompetition(compId : CompetitionId) : async Text {
     let caller = msg.caller;
 
     switch (competitionMap.get(compId)) {
@@ -480,7 +491,7 @@ actor {
   // ===========================
 
   // Fungsi user untuk join kompetisi
-  public func joinCompetition(compId : CompetitionId) : async Text {
+  public shared (msg) func joinCompetition(compId : CompetitionId) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
@@ -489,7 +500,7 @@ actor {
         switch (competitionMap.get(compId)) {
           case null return "Competition not found.";
           case (?comp) {
-            if (Iter.contains<UserId>(comp.participants.vals(), caller, Principal.equal)) {
+            if (Array.contains<UserId>(comp.participants, caller, Principal.equal)) {
               return "Already joined.";
             };
 
@@ -546,7 +557,7 @@ actor {
   };
 
   // User keluar dari kompetisi
-  public func unjoinCompetition(compId : CompetitionId) : async Text {
+  public shared (msg) func unjoinCompetition(compId : CompetitionId) : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
@@ -555,7 +566,7 @@ actor {
         switch (competitionMap.get(compId)) {
           case null return "Competition not found.";
           case (?comp) {
-            if (! Iter.contains<Principal>(comp.participants.vals(), caller, Principal.equal)) {
+            if (not Iter.contains<Principal>(comp.participants.vals(), caller, Principal.equal)) {
               return "You are not a participant of this competition.";
             };
 
@@ -673,7 +684,7 @@ actor {
   };
 
   // Cek jika user sudah join kompetisi atau belum
-  public query func hasJoined(compId : CompetitionId) : async Bool {
+  public shared query (msg) func hasJoined(compId : CompetitionId) : async Bool {
     let caller = msg.caller;
     switch (userMap.get(caller)) {
       case (?user) {
@@ -684,7 +695,7 @@ actor {
   };
 
   // Cek jika user sudah register atau belum
-  public query func isUserRegistered() : async Bool {
+  public shared query (msg) func isUserRegistered() : async Bool {
     let caller = msg.caller;
     return userMap.get(caller) != null;
   };
@@ -719,10 +730,10 @@ actor {
           let matchesKeyword = switch (keyword) {
             case null true;
             case (?k) {
-              let kLower = Text.toLowercase(k);
-              let nameMatch = Text.contains(Text.toLowercase(comp.name), kLower);
-              let descMatch = Text.contains(Text.toLowercase(comp.description), kLower);
-              nameMatch or descMatch;
+            let kLower = Text.toLowercase(k);
+            let nameMatch = Text.contains(Text.toLowercase(comp.name), #text kLower);
+            let descMatch = Text.contains(Text.toLowercase(comp.description), #text kLower);
+            nameMatch or descMatch;
             };
           };
 
@@ -775,7 +786,7 @@ actor {
   // === Admin / Testing ===
   // =======================
 
-  public func deleteUser() : async Text {
+  public shared (msg) func deleteUser() : async Text {
     let caller = msg.caller;
 
     switch (userMap.get(caller)) {
@@ -834,9 +845,10 @@ actor {
     competitionCount : Nat;
   } {
     return {
-      userCount = Nat.fromIter(userMap.keys());
-      competitionCount = Nat.fromIter(competitionMap.keys());
+      userCount = Iter.size(userMap.keys());
+      competitionCount = Iter.size(competitionMap.keys());
     };
+
   }
 
 };
