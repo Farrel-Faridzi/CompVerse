@@ -79,18 +79,33 @@ actor {
   // === DATABASES ===
   // =================
 
-  // Map user berdasarkan Username hanya untuk login dan register
-  stable var usernameMap = HashMap.HashMap<Text, UserId>(0, Text.equal, Text.hash);
+  // Stable upgrade-safe arrays
+  stable var stableUsernameMap     : [(Text, UserId)] = [];
+  stable var stableUserMap         : [(UserId, User)] = [];
+  stable var stableCompetitionMap  : [(CompetitionId, Competition)] = [];
+  stable var stableLoggedInMap     : [(UserId, Bool)] = [];
 
-  // Map user berdasarkan ID
-  stable var userMap = HashMap.HashMap<UserId, User>(0, Principal.equal, Principal.hash);
+  // Runtime HashMaps (not stable)
+  var usernameMap     = HashMap.HashMap<Text, UserId>(0, Text.equal, Text.hash);
+  var userMap         = HashMap.HashMap<UserId, User>(0, Principal.equal, Principal.hash);
+  var competitionMap  = HashMap.HashMap<CompetitionId, Competition>(0, Text.equal, Text.hash);
+  var loggedInMap     = HashMap.HashMap<UserId, Bool>(0, Principal.equal, Principal.hash);
 
-  // Map kompetisi berdasarkan ID teks
-  stable var competitionMap = HashMap.HashMap<CompetitionId, Competition>(0, Text.equal, Text.hash);
+  system func preupgrade() {
+    stableUsernameMap    := Iter.toArray(usernameMap.entries());
+    stableUserMap        := Iter.toArray(userMap.entries());
+    stableCompetitionMap := Iter.toArray(competitionMap.entries());
+    stableLoggedInMap    := Iter.toArray(loggedInMap.entries());
+  };
 
-  // Map to track which user is "logged in" (based on Principal)
-  stable var loggedInMap = HashMap.HashMap<UserId, Bool>(0, Principal.equal, Principal.hash);
+  system func postupgrade() {
+    usernameMap     := HashMap.fromIter(stableUsernameMap.vals(), 0, Text.equal, Text.hash);
+    userMap         := HashMap.fromIter(stableUserMap.vals(), 0, Principal.equal, Principal.hash);
+    competitionMap  := HashMap.fromIter(stableCompetitionMap.vals(), 0, Text.equal, Text.hash);
+    loggedInMap     := HashMap.fromIter(stableLoggedInMap.vals(), 0, Principal.equal, Principal.hash);
+  };
 
+  
   // ====================================
   // === AUTHENTICATION & USER LOGIC  ===
   // ====================================
